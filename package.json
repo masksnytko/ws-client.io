@@ -1,7 +1,7 @@
 {
   "name": "ws-client.io",
-  "version": "1.0.4",
-  "description": "",
+  "version": "1.0.5",
+  "description": "RPC events socket",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"

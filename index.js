@@ -2,9 +2,7 @@ const Events = require('events.io');
 
 class Socket extends Events {
     constructor(url, timeout = 5000) {
-
         super();
-
         this._url = url || location.protocol == 'https:' ? 'wss://' : 'ws://' + location.host;
         this._reInit = this._init.bind(this);
         this._timeout = timeout;
@@ -39,14 +37,14 @@ class Socket extends Events {
             if (id === undefined) {
                 this.emit(type, ...arg);
             } else {
-                this.emit(type, ...arg, (...arg) => this.request(type, ...arg));
+                this.emit(type, ...arg, (...arg) => this.request(id, ...arg));
             }
         }
     }
     _cleanQueue() {
         let i, size = this._queue.length;
         for (i = 0; i < size; ++i) {
-            this._ws.send(this._queue[i]);
+            this.send(this._queue[i]);
         }
         this._queue.splice(0, size);
     }
@@ -54,13 +52,12 @@ class Socket extends Events {
         if (typeof arg[arg.length - 1] === 'function') {
             let id = Math.random();
             this.once(id, arg.pop());
-            this.send(type, arg, id);
+            this.send(JSON.stringify([type, arg, id]));
         } else {
-            this.send(type, arg);
+            this.send(JSON.stringify([type, arg]));
         }
     }
-    send(...arg) {
-        let v = JSON.stringify(arg);
+    send(v) {
         try {
             this._ws.send(v);
         } catch (err) {

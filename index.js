@@ -64,7 +64,7 @@ class Socket extends Events {
         try {
             this._ws.send(v);
         } catch (err) {
-            this._q.push(v);
+            this._queue.push(v);
         }
     }
 }

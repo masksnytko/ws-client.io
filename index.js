@@ -48,7 +48,7 @@ class Socket extends Events {
         for (i = 0; i < size; ++i) {
             this._ws.send(this._queue[i]);
         }
-        this.splice(0, size);
+        this._queue.splice(0, size);
     }
     request(type, ...arg) {
         if (typeof arg[arg.length - 1] === 'function') {

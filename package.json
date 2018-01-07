@@ -1,0 +1,29 @@
+{
+  "name": "ws-client.io",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/masksnytko/ws-client.io.git"
+  },
+  "keywords": [
+    "ws",
+    "rpc",
+    "json",
+    "io",
+    "events"
+  ],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/masksnytko/ws-client.io/issues"
+  },
+  "homepage": "https://github.com/masksnytko/ws-client.io#readme",
+  "dependencies": {
+    "events.io": "^1.0.2"
+  }
+}

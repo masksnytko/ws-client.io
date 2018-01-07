@@ -5,15 +5,21 @@ class Socket extends Events {
 
         if (Socket.instance !== undefined) {
             return Socket.instance;    
+        } else {
+            super();
         }
 
         this._url = url || location.protocol == 'https:' ? 'wss://' : 'ws://' + location.host;
         this._q = [];
         this._init();
-
+        
         return Socket.instance = new Proxy(this, {
-            get: function(target, property, receiver) {
-                console.log(arguments);
+            get: function(target, property) {
+                if (property in target) {
+                    return target[property];
+                } else {
+                    return target[property] = target.request.bind(target, property);
+                }
             }
         });
     }
@@ -31,11 +37,11 @@ class Socket extends Events {
             console.error(v);
         }
         this._ws.onmessage = v => {
-            v = JSON.parse(v.data);
-            if (v.length === 3) {
-                super.emit(v[0], ...v[1], (...arg) => {
-                    this.emit(v[2], ...arg);
-                });
+            let [type, arg, id] = JSON.parse(v.data);
+            if (id === undefined) {
+                this.emit(type, ...arg);
+            } else {
+                this.emit(type, ...arg, (...arg) => this.request(type, ...arg));
             }
         }
     }
@@ -45,18 +51,17 @@ class Socket extends Events {
         }
         this._q = [];
     }
-    emit(type, ...arg) {
-        let last = arg[arg.length - 1];
-        if (typeof last === 'function') {
+    request(type, ...arg) {
+        if (typeof arg[arg.length - 1] === 'function') {
             let id = Math.random();
-            super.once(id, arg.pop());
-            this.send([type, arg, id]);
+            this.once(id, arg.pop());
+            this.send(type, arg, id);
         } else {
-            this.send([type, arg]);
+            this.send(type, arg);
         }
     }
-    send(v) {
-        v = JSON.stringify(v);
+    send(...arg) {
+        let v = JSON.stringify(arg);
         try {
             this._ws.send(v);
         } catch (err) {

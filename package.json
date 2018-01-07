@@ -1,6 +1,6 @@
 {
   "name": "ws-client.io",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -17,13 +17,13 @@
     "io",
     "events"
   ],
-  "author": "",
+  "author": "Maksim Snytko",
   "license": "ISC",
   "bugs": {
     "url": "https://github.com/masksnytko/ws-client.io/issues"
   },
   "homepage": "https://github.com/masksnytko/ws-client.io#readme",
   "dependencies": {
-    "events.io": "^1.0.2"
+    "events.io": "^2.0.3"
   }
 }

@@ -1,19 +1,17 @@
 const Events = require('events.io');
 
 class Socket extends Events {
-    constructor(url) {
+    constructor(url, timeout = 5000) {
 
-        if (Socket.instance !== undefined) {
-            return Socket.instance;    
-        } else {
-            super();
-        }
+        super();
 
         this._url = url || location.protocol == 'https:' ? 'wss://' : 'ws://' + location.host;
-        this._q = [];
+        this._reInit = this._init.bind(this);
+        this._timeout = timeout;
+        this._queue = [];
         this._init();
-        
-        return Socket.instance = new Proxy(this, {
+
+        return new Proxy(this, {
             get: function(target, property) {
                 if (property in target) {
                     return target[property];
@@ -30,8 +28,8 @@ class Socket extends Events {
         }
         this._ws.onclose = v => {
             if (!v.wasClean) {
-				setTimeout(this._init.bind(this), 5000);
-			}
+                setTimeout(this._reInit, this._timeout);
+            }
         }
         this._ws.onerror = v => {
             console.error(v);
@@ -46,10 +44,11 @@ class Socket extends Events {
         }
     }
     _cleanQueue() {
-        for (var i = 0; i < this._q.length; ++i) {
-            this._ws.send(this._q[i]);
+        let i, size = this._queue.length;
+        for (i = 0; i < size; ++i) {
+            this._ws.send(this._queue[i]);
         }
-        this._q = [];
+        this.splice(0, size);
     }
     request(type, ...arg) {
         if (typeof arg[arg.length - 1] === 'function') {

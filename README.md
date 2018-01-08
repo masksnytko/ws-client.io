@@ -26,16 +26,7 @@ ws.on('updateAndCallback', (v, cb) => {
 });
 ```
 
-You can also call a function without a server event
-```js
-ws.emit('update', 1);
-
-ws.emit('updateAndCallback', 2, (err, res) => {
-  console.log(err, res);
-});
-```
-
-# call the server function
+# call the server function (emit)
 ```js
 //with callback
 ws.getUsers((err, res) => {
@@ -44,4 +35,14 @@ ws.getUsers((err, res) => {
 
 //without callback
 ws['any function name']('any count arg');
+```
+or
+```js
+//with callback
+ws.emit('getUsers', (err, res) => {
+  console.log(err, res);
+});
+
+//without callback
+ws.emit('any function name', 'any count arg');
 ```

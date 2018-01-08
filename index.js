@@ -14,7 +14,7 @@ class Socket extends Events {
                 if (property in target) {
                     return target[property];
                 } else {
-                    return target[property] = target.request.bind(target, property);
+                    return target[property] = target.emit.bind(target, property);
                 }
             }
         });
@@ -35,9 +35,9 @@ class Socket extends Events {
         this._ws.onmessage = v => {
             let [type, arg, id] = JSON.parse(v.data);
             if (id === undefined) {
-                this.emit(type, ...arg);
+                super.emit(type, ...arg);
             } else {
-                this.emit(type, ...arg, (...arg) => this.request(id, ...arg));
+                super.emit(type, ...arg, (...arg) => this.emit(id, ...arg));
             }
         }
     }
@@ -48,7 +48,7 @@ class Socket extends Events {
         }
         this._queue.splice(0, size);
     }
-    request(type, ...arg) {
+    emit(type, ...arg) {
         if (typeof arg[arg.length - 1] === 'function') {
             let id = Math.random();
             this.once(id, arg.pop());

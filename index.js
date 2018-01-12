@@ -4,9 +4,13 @@ class Socket extends Events {
     constructor(url, timeout = 5000) {
         super();
         this._url = url || location.protocol == 'https:' ? 'wss://' : 'ws://' + location.host;
-        this._reInit = this._init.bind(this);
+        this._init = this._init.bind(this);
+        this._open = this._open.bind(this);
+        this._close = this._close.bind(this);
+        this._message = this._message.bind(this);
         this._timeout = timeout;
         this._queue = [];
+        this._k = 0;
         this._init();
 
         return new Proxy(this, {
@@ -20,28 +24,28 @@ class Socket extends Events {
         });
     }
     _init() {
-        this._ws = new WebSocket(this._url);
-        this._ws.onopen = v => {
-            this._cleanQueue();
-        }
-        this._ws.onclose = v => {
-            if (!v.wasClean) {
-                setTimeout(this._reInit, this._timeout);
-            }
-        }
-        this._ws.onerror = v => {
-            console.error(v);
-        }
-        this._ws.onmessage = v => {
-            let [type, arg, id] = JSON.parse(v.data);
-            if (id === undefined) {
-                super.emit(type, ...arg);
-            } else {
-                super.emit(type, ...arg, (...arg) => this.emit(id, ...arg));
-            }
+        this.ws = new WebSocket(this._url);
+        this.ws.onopen = this._open;
+        this.ws.onclose = this._close;
+        this.ws.onmessage = this._message;
+    }
+    _open() {
+        this.cleanQueue();
+    }
+    _message(v) {
+        let [type, arg, id] = JSON.parse(v.data);
+        if (id === undefined) {
+            super.emit(type, ...arg);
+        } else {
+            super.emit(type, ...arg, (...arg) => this.emit(id, ...arg));
         }
     }
-    _cleanQueue() {
+    _close(v) {
+        if (v.wasClean === false) {
+            setTimeout(this._init, this._timeout);
+        }
+    }
+    cleanQueue() {
         let i, size = this._queue.length;
         for (i = 0; i < size; ++i) {
             this.send(this._queue[i]);
@@ -50,7 +54,7 @@ class Socket extends Events {
     }
     emit(type, ...arg) {
         if (typeof arg[arg.length - 1] === 'function') {
-            let id = Math.random();
+            let id = this._k++;
             this.once(id, arg.pop());
             this.send(JSON.stringify([type, arg, id]));
         } else {
@@ -59,7 +63,7 @@ class Socket extends Events {
     }
     send(v) {
         try {
-            this._ws.send(v);
+            this.ws.send(v);
         } catch (err) {
             this._queue.push(v);
         }

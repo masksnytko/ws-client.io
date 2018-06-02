@@ -63,7 +63,11 @@ class Socket extends Events {
     }
     send(v) {
         try {
-            this.ws.send(v);
+            if (this.ws.readyState === 1) {
+                this.ws.send(v);
+            } else {
+                throw 'readyState';
+            }
         } catch (err) {
             this._queue.push(v);
         }
